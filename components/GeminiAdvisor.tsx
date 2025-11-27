@@ -63,7 +63,7 @@ const GeminiAdvisor: React.FC = () => {
               AI ROI Consultant
             </h2>
             <p className="text-indigo-100 max-w-xl">
-              Leverage the power of Gemini 2.5 to generate an executive-ready investment analysis based on your project parameters.
+              Leverage the power of Gemini 3 Pro to generate an executive-ready investment analysis based on your project parameters.
             </p>
           </div>
           <Sparkles className="w-16 h-16 text-white/20" />
@@ -153,7 +153,7 @@ const GeminiAdvisor: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
                  <h3 className="font-semibold text-slate-800">Generated Report</h3>
-                 <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Gemini 2.5 Flash</span>
+                 <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">Gemini 3 Pro</span>
                </div>
                <div className="p-8 prose prose-indigo max-w-none text-slate-700">
                   <ReactMarkdown>{analysis}</ReactMarkdown>
