@@ -67,13 +67,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isOpen, setI
                 setIsOpen(false);
               }}
               className={`
-                w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors
+                w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left
                 ${currentView === item.view 
                   ? 'bg-blue-50 text-blue-700' 
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
               `}
             >
-              <item.icon size={18} />
+              <item.icon size={18} className="flex-shrink-0" />
               <span>{item.label}</span>
             </button>
           ))}
