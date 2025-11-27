@@ -1,3 +1,4 @@
+
 export interface KPI {
   industry: string;
   metric: string;
@@ -34,4 +35,28 @@ export interface PlaybookPhase {
   duration: string;
   goal: string;
   items: string[];
+}
+
+export interface CaseStudyFinancials {
+  year: string;
+  cost: number;
+  benefit: number;
+  netValue: number;
+}
+
+export interface CaseStudy {
+  id: string;
+  title: string;
+  industry: string;
+  challenge: string;
+  solution: string;
+  outcome: string;
+  metrics: { label: string; value: string; desc: string }[];
+  financialData: CaseStudyFinancials[];
+  roiHighlights: {
+    payback: string;
+    irr: string;
+    npv: string;
+  };
+  linkToTool: ViewState;
 }

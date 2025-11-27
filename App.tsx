@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import ROICalculator from './components/ROICalculator';
 import GeminiAdvisor from './components/GeminiAdvisor';
-import { ViewState, KPI } from './types';
-import { KPIS, PLAYBOOK } from './constants';
+import { ViewState, KPI, CaseStudy } from './types';
+import { KPIS, PLAYBOOK, CASE_STUDIES } from './constants';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -11,7 +12,12 @@ import {
   TrendingUp, 
   ShieldCheck, 
   DollarSign,
-  Search
+  Search,
+  ArrowLeft,
+  PieChart,
+  Briefcase,
+  Factory,
+  Landmark
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, AreaChart, Area } from 'recharts';
 
@@ -19,14 +25,14 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.HOME);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [kpiSearch, setKpiSearch] = useState('');
+  const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(null);
 
-  // Case Study Data for Chart
-  const caseStudyData = [
-    { name: 'Year 0', Cost: 330000, NetValue: -330000 },
-    { name: 'Year 1', Cost: 0, NetValue: -95625 }, // -330k + 234,375
-    { name: 'Year 2', Cost: 0, NetValue: 138750 }, // -95k + 234,375
-    { name: 'Year 3', Cost: 0, NetValue: 373125 }, // 138k + 234,375
-  ];
+  const getIndustryIcon = (industry: string) => {
+    if (industry.includes('Consulting')) return <Briefcase className="w-6 h-6" />;
+    if (industry.includes('Manufacturing')) return <Factory className="w-6 h-6" />;
+    if (industry.includes('Financial')) return <Landmark className="w-6 h-6" />;
+    return <PieChart className="w-6 h-6" />;
+  };
 
   const renderContent = () => {
     switch (currentView) {
@@ -198,61 +204,164 @@ const App: React.FC = () => {
         );
 
       case ViewState.CASE_STUDY:
+        if (selectedCaseStudy) {
+          return (
+            <div className="space-y-8 animate-fade-in">
+              <button 
+                onClick={() => setSelectedCaseStudy(null)}
+                className="flex items-center text-slate-500 hover:text-blue-600 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" /> Back to Case Studies
+              </button>
+
+              <div className="bg-indigo-900 text-white rounded-2xl p-8 shadow-lg">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-indigo-100 text-xs font-medium mb-4 backdrop-blur-sm">
+                      {getIndustryIcon(selectedCaseStudy.industry)}
+                      {selectedCaseStudy.industry}
+                    </span>
+                    <h2 className="text-3xl font-bold mb-4">{selectedCaseStudy.title}</h2>
+                    <p className="text-indigo-100 max-w-3xl leading-relaxed text-lg opacity-90">
+                      {selectedCaseStudy.solution}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-6 mt-8 pt-8 border-t border-indigo-800/50">
+                  {selectedCaseStudy.metrics.map((metric, idx) => (
+                    <div key={idx} className="bg-indigo-800/30 p-4 rounded-xl backdrop-blur-sm">
+                      <div className="text-sm uppercase tracking-wider text-indigo-300 mb-1">{metric.label}</div>
+                      <div className="text-2xl font-bold text-white mb-1">{metric.value}</div>
+                      <div className="text-xs text-indigo-200">{metric.desc}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-blue-600" /> 
+                      Cumulative Net Value
+                    </h3>
+                    <div className="h-80 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={selectedCaseStudy.financialData}>
+                          <defs>
+                            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8}/>
+                              <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                          <XAxis dataKey="year" />
+                          <YAxis tickFormatter={(val) => `$${val/1000}k`} />
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            formatter={(val: number) => [`$${val.toLocaleString()}`, 'Net Value']} 
+                          />
+                          <Legend />
+                          <Area type="monotone" dataKey="netValue" stroke="#4f46e5" fillOpacity={1} fill="url(#colorValue)" name="Net Present Value (NPV)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900 mb-4">Challenge & Solution Detail</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-semibold text-slate-800 mb-1">The Challenge</h4>
+                        <p className="text-slate-600 leading-relaxed">{selectedCaseStudy.challenge}</p>
+                      </div>
+                      <div className="h-px bg-slate-100"></div>
+                      <div>
+                        <h4 className="font-semibold text-slate-800 mb-1">The Outcome</h4>
+                        <p className="text-slate-600 leading-relaxed">{selectedCaseStudy.outcome}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="font-bold text-slate-900 mb-4">Financial Highlights</h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                        <span className="text-slate-500 text-sm">Payback Period</span>
+                        <span className="font-semibold text-slate-900">{selectedCaseStudy.roiHighlights.payback}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-slate-50">
+                        <span className="text-slate-500 text-sm">IRR</span>
+                        <span className="font-semibold text-green-600">{selectedCaseStudy.roiHighlights.irr}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-slate-500 text-sm">3-Year NPV</span>
+                        <span className="font-semibold text-indigo-600">{selectedCaseStudy.roiHighlights.npv}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                    <h4 className="font-semibold text-indigo-900 mb-2">Want results like this?</h4>
+                    <p className="text-sm text-indigo-700 mb-4">
+                      Use the {selectedCaseStudy.linkToTool === ViewState.CALCULATOR ? 'ROI Calculator' : 'Framework'} to model your own success.
+                    </p>
+                    <button 
+                      onClick={() => {
+                        setSelectedCaseStudy(null);
+                        setCurrentView(selectedCaseStudy.linkToTool);
+                      }}
+                      className="w-full bg-white text-indigo-600 border border-indigo-200 py-2 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors"
+                    >
+                      Go to Tool
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Case Study List View
         return (
           <div className="space-y-8">
-             <div className="bg-indigo-900 text-white rounded-2xl p-8 shadow-lg">
-                <h2 className="text-2xl font-bold mb-4">Consulting Firm Case Study</h2>
-                <div className="grid md:grid-cols-3 gap-6 text-indigo-100">
-                  <div>
-                    <div className="text-sm uppercase tracking-wider opacity-70">Scenario</div>
-                    <div className="font-semibold mt-1">35 Analysts automating research & drafting</div>
-                  </div>
-                  <div>
-                    <div className="text-sm uppercase tracking-wider opacity-70">Investment</div>
-                    <div className="font-semibold mt-1">$330,000 upfront</div>
-                  </div>
-                   <div>
-                    <div className="text-sm uppercase tracking-wider opacity-70">Outcome</div>
-                    <div className="font-semibold mt-1">1,875 hours saved/yr = $234k/yr</div>
-                  </div>
-                </div>
-             </div>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">Real-World AI Case Studies</h2>
+              <p className="text-slate-600 max-w-2xl">
+                Explore how leading enterprises are applying the ROI framework to Consulting, Manufacturing, and FinTech to achieve measurable returns.
+              </p>
+            </div>
 
-             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                <h3 className="text-lg font-bold text-slate-900 mb-6">Cumulative Net Value Over 3 Years</h3>
-                <div className="h-80 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={caseStudyData}>
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis tickFormatter={(val) => `$${val/1000}k`} />
-                      <Tooltip formatter={(val: number) => `$${val.toLocaleString()}`} />
-                      <Legend />
-                      <Area type="monotone" dataKey="NetValue" stroke="#4f46e5" fillOpacity={1} fill="url(#colorValue)" name="Net Value (NPV Trend)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-6 grid grid-cols-3 gap-4 text-center">
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900">1.41 Years</div>
-                    <div className="text-xs text-slate-500 uppercase mt-1">Payback Period</div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {CASE_STUDIES.map((study) => (
+                <button 
+                  key={study.id}
+                  onClick={() => setSelectedCaseStudy(study)}
+                  className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-indigo-200 transition-all text-left group flex flex-col h-full"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    {getIndustryIcon(study.industry)}
                   </div>
-                   <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900">32%</div>
-                    <div className="text-xs text-slate-500 uppercase mt-1">IRR</div>
+                  
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">{study.industry}</div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">
+                    {study.title}
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed mb-6 line-clamp-3 flex-grow">
+                    {study.challenge}
+                  </p>
+                  
+                  <div className="pt-6 border-t border-slate-100 w-full mt-auto">
+                    <div className="flex items-center text-sm font-medium text-blue-600 group-hover:translate-x-1 transition-transform">
+                      View Analysis <ArrowRight className="w-4 h-4 ml-1" />
+                    </div>
                   </div>
-                   <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-2xl font-bold text-slate-900">$274,000</div>
-                    <div className="text-xs text-slate-500 uppercase mt-1">3-Year NPV</div>
-                  </div>
-                </div>
-             </div>
+                </button>
+              ))}
+            </div>
           </div>
         );
 
@@ -308,7 +417,10 @@ const App: React.FC = () => {
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar 
         currentView={currentView} 
-        onNavigate={setCurrentView}
+        onNavigate={(view) => {
+          setCurrentView(view);
+          setSelectedCaseStudy(null);
+        }}
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
       />
