@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar';
 import ROICalculator from './components/ROICalculator';
 import GeminiAdvisor from './components/GeminiAdvisor';
 import { ViewState, KPI, CaseStudy } from './types';
-import { KPIS, PLAYBOOK, CASE_STUDIES } from './constants';
+import { KPIS, PLAYBOOK, CASE_STUDIES, GLOSSARY_TERMS } from './constants';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -25,6 +25,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>(ViewState.HOME);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [kpiSearch, setKpiSearch] = useState('');
+  const [glossarySearch, setGlossarySearch] = useState('');
   const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(null);
 
   const getIndustryIcon = (industry: string) => {
@@ -407,6 +408,77 @@ const App: React.FC = () => {
 
       case ViewState.AI_ADVISOR:
         return <GeminiAdvisor />;
+
+      case ViewState.GLOSSARY:
+        // Filter and Sort Glossary
+        const filteredGlossary = GLOSSARY_TERMS.filter(term => 
+          term.term.toLowerCase().includes(glossarySearch.toLowerCase()) || 
+          term.definition.toLowerCase().includes(glossarySearch.toLowerCase())
+        ).sort((a, b) => a.term.localeCompare(b.term));
+
+        // Group by First Letter
+        const groupedGlossary: { [key: string]: typeof GLOSSARY_TERMS } = {};
+        filteredGlossary.forEach(item => {
+          const letter = item.term.charAt(0).toUpperCase();
+          if (!groupedGlossary[letter]) groupedGlossary[letter] = [];
+          groupedGlossary[letter].push(item);
+        });
+
+        return (
+          <div className="space-y-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-900">Glossary of Terms</h2>
+                <p className="text-slate-600 mt-1">Definitions for {GLOSSARY_TERMS.length} essential AI and ROI concepts.</p>
+              </div>
+              <div className="relative w-full md:w-72">
+                <Search className="absolute left-3 top-2.5 text-slate-400 w-5 h-5" />
+                <input 
+                  type="text" 
+                  placeholder="Find a term..."
+                  className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  value={glossarySearch}
+                  onChange={(e) => setGlossarySearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {Object.keys(groupedGlossary).length === 0 && (
+              <div className="text-center py-12 text-slate-500">
+                No terms found matching "{glossarySearch}".
+              </div>
+            )}
+
+            <div className="space-y-8">
+              {Object.keys(groupedGlossary).map(letter => (
+                <div key={letter} className="relative">
+                  <div className="sticky top-0 bg-slate-50 py-2 z-10 border-b border-slate-200 mb-4">
+                    <span className="text-xl font-bold text-slate-400">{letter}</span>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {groupedGlossary[letter].map((item, idx) => (
+                      <div key={idx} className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="text-lg font-bold text-slate-900">{item.term}</h3>
+                          <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${
+                            item.category === 'Financial' ? 'bg-green-100 text-green-700' :
+                            item.category === 'Technical' ? 'bg-purple-100 text-purple-700' :
+                            'bg-blue-100 text-blue-700'
+                          }`}>
+                            {item.category}
+                          </span>
+                        </div>
+                        <p className="text-slate-600 text-sm leading-relaxed">
+                          {item.definition}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
       
       default:
         return <div>View not found</div>;

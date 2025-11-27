@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ViewState } from '../types';
 import { 
@@ -9,7 +10,8 @@ import {
   Bot, 
   BarChart3,
   Menu,
-  X
+  X,
+  Book
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,6 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isOpen, setI
     { view: ViewState.CASE_STUDY, label: 'Real-World Example', icon: BarChart3 },
     { view: ViewState.PLAYBOOK, label: 'Adoption Playbook', icon: BookOpen },
     { view: ViewState.AI_ADVISOR, label: 'AI ROI Advisor', icon: Bot },
+    { view: ViewState.GLOSSARY, label: 'Glossary of Terms', icon: Book },
   ];
 
   return (
@@ -44,16 +47,18 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isOpen, setI
       <div className={`
         fixed top-0 left-0 h-full bg-white border-r border-slate-200 z-40 transition-transform duration-300 ease-in-out w-64
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
-        lg:translate-x-0 lg:static flex-shrink-0
+        lg:translate-x-0 lg:static flex-shrink-0 flex flex-col
       `}>
-        <div className="p-6 border-b border-slate-100">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-100 flex-shrink-0">
           <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
             AI ROI Guide
           </h1>
           <p className="text-xs text-slate-500 mt-1">Enterprise Measurement</p>
         </div>
         
-        <nav className="p-4 space-y-1">
+        {/* Navigation - Flex 1 allows this to grow and scroll */}
+        <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
           {navItems.map((item) => (
             <button
               key={item.view}
@@ -74,7 +79,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isOpen, setI
           ))}
         </nav>
 
-        <div className="absolute bottom-0 w-full p-4 border-t border-slate-100 bg-slate-50">
+        {/* Footer - Pinned to bottom naturally via flex layout */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50 flex-shrink-0">
           <p className="text-xs text-slate-400 text-center">
             Based on the "Guide to AI ROI Measurement"
           </p>

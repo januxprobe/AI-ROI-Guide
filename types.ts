@@ -27,7 +27,8 @@ export enum ViewState {
   CALCULATOR = 'CALCULATOR',
   PLAYBOOK = 'PLAYBOOK',
   AI_ADVISOR = 'AI_ADVISOR',
-  CASE_STUDY = 'CASE_STUDY'
+  CASE_STUDY = 'CASE_STUDY',
+  GLOSSARY = 'GLOSSARY'
 }
 
 export interface PlaybookPhase {
@@ -59,4 +60,10 @@ export interface CaseStudy {
     npv: string;
   };
   linkToTool: ViewState;
+}
+
+export interface GlossaryTerm {
+  term: string;
+  definition: string;
+  category: 'Financial' | 'Technical' | 'Operational' | 'General';
 }
